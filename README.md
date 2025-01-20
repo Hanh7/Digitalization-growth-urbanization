@@ -1,17 +1,25 @@
 # Digitalization-growth-urbanization
 
 BEEM136 - FINAL PROJECT
+
 Project title: An exploratory research into the relationship of digitalization (subscription-based economy), economic growth, and urban development
+
 This study aims to untangle two research questions: (i) how digitalization correlates with economic growth; (ii) how urban development correlates with digitalization
 
 **This file includes fundamental information to replicate the work crafted in the assignment**
+
 **The package associated with this project includes: A pdf report, a do-file with full script, a folder of raw datasets, a folder of derived datasets, a folder of results graphs, and a README file**
+
 **This project is done with Stata 18.5**
 
 1. Data sources
+
 Dataset title: International Panel Data Analysis of the Effect of Digitalization on Economic Growth
+
 Published: 7 February 2024
+
 doi: 10.17632/ctm7vvpp7n.1
+
 Contributors: Abderrazek ELKHALDI, Nadia Sghaier, Monia Chikhaoui
 
 Worldbank open data (Indicators: access_to_electricity, urban_population, GINI)
@@ -31,17 +39,25 @@ coefplot: to export regression tables after running the models
 3. Variables explanation:
 
 Narrative 1 consists of 1 model
+
 - Dependent var: log_gdp (economic growth)
+
 - Independent var: 
+
 DDI
+
 DDI_sq (square of DDI)
+
 Other control var for economic constraints: trade_openness, RD, capital (GFCF), population growth
 
 Narrative 2 consists of 2 models
+
 - Dependent var: DDI
+
 - Independent var: urban population growth, square term of urban population growth, access to electricity, gini, log_gdp
 
 Method used: fixed-effects regression
+
 Data properties: strongly balanced, panel, continuous variables
 
 4. Data cleaning and variable generation process:
