@@ -1,0 +1,167 @@
+*data cleaning process is done with the base dataset, access to electricity, urban population, gini index
+*The assignment is completed with Stata 18.5
+
+
+*DATA IMPORT AND DESCRIPTION
+//Step 1: Import file digitalization_base.xlsx, then save as .dta format for convenience
+
+import excel "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\files_to_submit\digitalization_base_v2.xlsx", sheet ("Data") firstrow
+browse
+
+
+//Step 2: Create a workzone to work on local machine
+cd "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project"
+save digitalization_base.dta, replace
+use digitalization_base.dta
+
+*Compile urban development variables into the master dataset with two other groups of variables
+*access_to_electricity
+import excel "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\access_to_electricity_v2.xlsx", sheet ("Data") firstrow
+browse
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\access_to_electricity.dta"
+
+reshape long year_, i(country_code) j(year)
+rename year_ access_to_electricity
+
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\access_to_electricity_long.dta"
+
+merge 1:1 country_code year using "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\digitalization_base.dta"
+//2730 records are matched. 3388 records are not matched because they represent countries that are not contained in the master dataset.
+//there is no risk of missing values, safe to remove unmatched records.
+
+keep if _merge ==3
+
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\access_to_electricity_long.dta", replace
+
+*urban population
+clear 
+
+import excel "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\urban_pop_v2.xlsx", sheet ("Data") firstrow
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\urban_pop.dta"
+
+reshape long year_, i(country_code) j(year)
+rename year_ urban_pop
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\urban_pop_long.dta"
+merge 1:1 country_code year using "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\digitalization_base.dta"
+keep if _merge ==3
+
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\digitalization_base.dta", replace
+
+*gini index
+clear
+import excel "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\gini_index.xlsx", sheet ("Data") firstrow
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\gini_index.dta"
+
+reshape long year_, i(country_code) j(year)
+rename year_ gini_index
+
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\gini_index_long.dta"
+merge 1:1 country_code year using "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\digitalization_base.dta"
+keep if _merge ==3
+
+drop _merge
+
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\digitalization_base.dta", replace
+
+
+*Description of the base dataset
+describe
+
+ssc install estout
+//Post the descriptive statistics
+estpost summarize
+
+//Output the descriptive statistics with 2 decimal places
+esttab using descriptive_statistics.tex, cells("mean(fmt(%9.4f)) sd(fmt(%9.4f)) min(fmt(%9.4f)) max(fmt(%9.4f))") replace title("Descriptive Statistics") label
+
+//correlation of 4 variables in digitalization
+correlate FPS BBS MPS IU
+
+scatter log_gdp MPS, title("Scatter Plot of economic growth vs mobile cellular subs", size(small)) xtitle("MPS (%)") ytitle("Log_GDP (%)")
+
+scatter log_gdp IU, title("Scatter Plot of economic growth vs internet users", size(small)) xtitle("IU (%)") ytitle("Log_GDP (%)")
+
+//standardize access_to_electricity and gini
+egen gini_std = std(gini)
+egen access_to_electricity_std = std(access_to_electricity) 
+
+
+*FURTHER DESCRIPTION
+*Graphs of internet users throughout years
+*Libraries to use: shp2dta and spmap
+ssc install shp2dta
+ssc install spmap
+
+use "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\map_data\map_country.dta"
+
+//description of the geographical dataset
+count //total number of records of countries and their territories: 256
+
+tabulate status //show distinct values in variable "status"
+
+count if status == "Member State" //total number of records of countries: 193
+
+keep if status == "Member State" | iso3 == "HKG" //create a new dataset of geographical data
+*Hong Kong is a territory of China
+
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\map_data\map_country_v2.dta", replace
+//save as a new dataset in the folder
+
+cd "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project"
+use digitalization_base.dta
+
+gen iso3 = country_code
+gen country_id = id
+
+save digitalization_base_geo.dta, replace
+
+merge m:1 iso3 using "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\map_data\map_country_v2.dta"
+//merge to create a dataset for graphs of internet users throughout years
+keep if _merge == 3
+
+*explanation of missing values: 64 unmatched values are equivalent to 64 countries which are not contained in the master file of digitalization data.
+*So, there is no risk of missing values after merging. It is safe to remove the unmatched values
+
+//create maps
+
+keep country_code country_name country_id year IU iso3 status color_code id
+save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\digitalization_base_geo_to_graph.dta", replace
+
+preserve
+reshape wide IU, i(country_id) j(year)
+
+cd "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\map_data"
+
+
+spmap IU2000 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(7) title("Internet Users in 2000 as % of population", size(medium)) name(map_2000, replace)
+spmap IU2005 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(7) title("Internet Users in 2005 as % of population", size(medium)) name(map_2005, replace)
+spmap IU2010 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(7) title("Internet Users in 2010 as % of population", size(medium)) name(map_2010, replace)
+spmap IU2015 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(7) title("Internet Users in 2015 as % of population", size(medium)) name(map_2015, replace)
+spmap IU2020 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(7) title("Internet Users in 2020 as % of population", size(medium)) name(map_2020, replace)
+
+graph combine map_2000 map_2005 map_2010 map_2015 map_2020, rows(2) cols(2)
+//view maps together
+
+restore
+
+//map for access to electricity
+use "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\Hanh Pham_730078619_beem136_final_project\dataset_derived\digitalization_base_geo.dta"
+
+preserve
+keep country_code country_name country_id year access_to_electricity iso3 status color_code id
+
+reshape wide access_to_electricity, i(country_id) j(year)
+//save "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\digitalization_base_geo_to_graph_v2.dta"
+
+cd "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\map_data"
+
+
+spmap access_to_electricity2000 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(8) title("Access to electricity in 2000 as % of population", size(medium)) name(map_2000, replace)
+spmap access_to_electricity2005 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(8) title("Access to electricity in 2005 as % of population", size(medium)) name(map_2005, replace)
+spmap access_to_electricity2010 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(8) title("Access to electricity in 2010 as % of population", size(medium)) name(map_2010, replace)
+spmap access_to_electricity2015 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(8) title("Access to electricity in 2015 as % of population", size(medium)) name(map_2015, replace)
+spmap access_to_electricity2020 using map_coord.dta, id(id) fcolor(RdYlGn) clnumber(8) title("Access to electricity in 2020 as % of population", size(medium)) name(map_2020, replace)
+
+graph combine map_2000 map_2005 map_2010 map_2015 map_2020, rows(2) cols(2)
+
+restore
