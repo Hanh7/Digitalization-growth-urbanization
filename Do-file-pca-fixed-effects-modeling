@@ -1,0 +1,94 @@
+*MODELS FOR RESEARCH HYPOTHESIS
+*NARRATIVE 1: The relationship between digitalization and economic growth
+*Method: Fixed-effects
+
+reg log_gdp DDI, vce(robust) //classical regression model
+
+xtset country_id year 
+//xtset command: Ensures that Stata treats the data as panel data, with country as the panel identifier and year as the time variable.
+//country_id is generated during the work and used instead of country_code
+
+gen DDI_sq = DDI^2  
+// Create the squared term
+
+
+xtreg log_gdp DDI DDI_sq RD trade_openness GFCF log_pop, fe
+//basic fixed-effects model control variables for first narrative
+
+eststo model1
+
+esttab model1 using regression_results.tex, replace title("Hypothesis 1 results") label
+//export result into table in latex
+
+
+*NARRATIVE 2: The relationship between urban development and digitalization
+*must merge the access to electricity and urban population into the main dataset
+*run models with the same methods as narrative 1
+
+gen log_urban_pop = log(urban_pop)
+
+xtreg DDI log_urban_pop access_to_electricity_std gini_std log_gdp, fe
+//based model of the second narrative
+
+gen log_urban_pop_sq = log_urban_pop^2
+
+xtreg DDI log_urban_pop log_urban_pop_sq access_to_electricity_std gini_std log_gdp, fe
+//test if there is any quadratic relationship?
+
+eststo model2
+
+esttab model2 using regression_results_2.tex, replace title("Hypothesis 2 results") label
+//export result into table in latex
+
+
+*REPRODUCTION OF DIGITALIZATION INDEX
+*PRINCIPLE COMPONENT ANALYSIS TO CONSTRUCT DIGITALIZATION INDEX
+estat kmo
+//test the sampling adequacy
+
+pca MPS IU FPS BBS
+
+screeplot, graphregion(color(white)) ytitle("Components") title ("Eigenvalues by component") ylab(,nogrid)
+//eigenvalues plot
+
+//Extract the eigenvalues from a matrix (assumed to be in e(Ev))
+mat eigenvalues = e(Ev)
+
+//Convert the matrix to a variable for further manipulation
+gen eigenvalues = eigenvalues[1,_n]
+
+//Calculate the total of the eigenvalues
+egen pct = total(eigenvalues) if !mi(eigenvalues)
+
+//Calculate the percentage of each eigenvalue
+replace pct = sum((eigenvalues/pct)*100) if !mi(eigenvalues)
+
+//Create a variable for the component number
+gen component = _n if !mi(eigenvalues)
+
+//Create the cumulative plot of components
+twoway (line pct component, sort) (scatter pct component, yaxis(2)), ytitle("Cumulative Percentage (left axis)", size(small)) ytitle("Percentage (right axis)", axis(2) size(small)) xtitle("Component", size(small)) legend(label(1 "Cumulative Percentage") label(2 "Percentage") size(small)) title("Cumulative variation explained")
+			  
+			  
+loadingplot, graphregion(color(white)) title("Variation loading to Comp1 and Comp2")
+//visualize how much variables loaded onto components
+
+*GENERATE A NEW VARIABLE OF DIGITALIZATION INDEX
+predict ddi_pca
+
+hist ddi_pca, freq title("Distribution of the variable DDI, after running PCA") xtitle("DDI value")
+//initial distribution of the new variable
+
+egen ddi_pca_standardized = std(ddi_pca)
+//standardize ddi_pca
+
+hist ddi_pca_standardized, freq title("Distribution of the variable DDI, after standardising") xtitle("DDI value")
+//visualize after standardizing
+
+estpost summarize ddi_pca
+esttab using summary.tex, cells(mean sd min max) label replace title("Initial summary statistics of the new DDI var") nonumbers
+//descriptive statistics of the newly-constructed DDI var
+
+estpost summarize ddi_pca_standardized
+esttab using summary_standard.tex, cells(mean sd min max) label replace title("Summary statistics of the standardized DDI var") nonumbers
+//descriptive statistics of the newly-constructed DDI var, after standardising
