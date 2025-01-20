@@ -2,7 +2,7 @@
 
 BEEM136 - FINAL PROJECT
 Project title: An exploratory research into the relationship of digitalization (subscription-based economy), economic growth, and urban development
-This study aims to untangle two research questions: (i) how digitalization correlates with eco- nomic growth; (ii) how urban development correlates with digitalization
+This study aims to untangle two research questions: (i) how digitalization correlates with economic growth; (ii) how urban development correlates with digitalization
 
 **This file includes fundamental information to replicate the work crafted in the assignment**
 **The package associated with this project includes: A pdf report, a do-file with full script, a folder of raw datasets, a folder of derived datasets, a folder of results graphs, and a README file**
@@ -25,7 +25,7 @@ estout: to generate descriptive statistics
 shp2dta, spmap: to draw geographic graphs
 coefplot: to export regression tables after running the models
 
-3. Process to replicate research results:
+3. Variables explanation:
 Narrative 1 consists of 1 model
 - Dependent var: log_gdp (economic growth)
 - Independent var: 
@@ -52,5 +52,5 @@ Data properties: strongly balanced, panel, continuous variables
 - The process of generating geographical graphs including merging and dealing with missing values is explained in Appendix 6.2, pdf file.
 - The process of reproducing digitalization index (DDI) is elaborated in Appendix 6.4, pdf file.
 
-  6. Folders of raw and devived datasets and a final report in PDF format can be found here: https://universityofexeteruk-my.sharepoint.com/my?id=%2Fpersonal%2Fnp535%5Fexeter%5Fac%5Fuk%2FDocuments%2FDocuments%2FNp535%2Frmbeem136%2Ffinal%5Fproject%2FHanh%20Pham%5F730078619%5Fbeem136%5Ffinal%5Fproject&login_hint=np535%40exeter%2Eac%2Euk
+6. Folders of raw and devived datasets and a final report in PDF format can be found here: https://universityofexeteruk-my.sharepoint.com/my?id=%2Fpersonal%2Fnp535%5Fexeter%5Fac%5Fuk%2FDocuments%2FDocuments%2FNp535%2Frmbeem136%2Ffinal%5Fproject%2FHanh%20Pham%5F730078619%5Fbeem136%5Ffinal%5Fproject&login_hint=np535%40exeter%2Eac%2Euk
   
