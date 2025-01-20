@@ -14,6 +14,9 @@ cd "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\fin
 save digitalization_base.dta, replace
 use digitalization_base.dta
 
+misstable summarize //check missing values
+
+
 *Compile urban development variables into the master dataset with two other groups of variables
 *access_to_electricity
 import excel "C:\Users\np535\OneDrive - University of Exeter\Documents\Np535\rmbeem136\final_project\access_to_electricity_v2.xlsx", sheet ("Data") firstrow
